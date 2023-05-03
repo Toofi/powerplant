@@ -5,5 +5,6 @@ namespace Powerplant.Application.Services
     public interface IProductionPlanService
     {
         public List<ProductionPlanResponse> CalculateProductionPlan(uint load, Fuels fuels, List<Powerplant.Domain.Models.Powerplant> powerplants);
+        public double CalculatePowerplantCost(double efficiency, double fuelCostPerMWh);
     }
 }

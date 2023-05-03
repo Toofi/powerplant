@@ -85,7 +85,7 @@ namespace Powerplant.Application.Services
             return (load < powerplant.Pmax && powerplant.Pmin <= load);
         }
 
-        private double CalculatePowerplantCost(double efficiency, double fuelCostPerMWh)
+        public double CalculatePowerplantCost(double efficiency, double fuelCostPerMWh)
         {
             return fuelCostPerMWh / efficiency;
         }
