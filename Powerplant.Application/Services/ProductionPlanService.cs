@@ -1,11 +1,18 @@
-﻿using Powerplant.Domain.Enums;
+﻿using Microsoft.Extensions.Logging;
+using Powerplant.Domain.Enums;
 using Powerplant.Domain.Models;
-using System.Collections.Generic;
 
 namespace Powerplant.Application.Services
 {
     public class ProductionPlanService : IProductionPlanService
     {
+        private readonly ILogger<ProductionPlanService> _logger;
+
+        public ProductionPlanService(ILogger<ProductionPlanService> logger)
+        {
+            _logger = logger;
+        }
+
         public List<ProductionPlanResponse> CalculateProductionPlan(uint load, Fuels fuels, List<Domain.Models.Powerplant> powerplants)
         {
             List<(string powerplantName, double costPerMWh)> meritOrder = this.GetMeritOrder(powerplants, fuels);
@@ -33,6 +40,7 @@ namespace Powerplant.Application.Services
                         meritOrder.Add((powerplant.Name, costPerMWh));
                         break;
                     default:
+                        this._logger.LogError("{type} - {message}", "Error", "The powerplant has not a supported power type. Skipping the powerplant.");
                         break;
                 }
             }
@@ -64,6 +72,10 @@ namespace Powerplant.Application.Services
                     load -= powerplant.Pmax;
                     productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, powerplant.Pmax));
                 }
+            }
+            if (load != 0)
+            {
+                this._logger.LogWarning("{type} - {message}", "Warning", "No powerplant available to supply all the load asked.");
             }
             return productionPlanResponse;
         }
