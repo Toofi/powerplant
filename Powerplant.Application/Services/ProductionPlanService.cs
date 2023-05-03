@@ -9,35 +9,7 @@ namespace Powerplant.Application.Services
         public List<ProductionPlanResponse> CalculateProductionPlan(uint load, Fuels fuels, List<Domain.Models.Powerplant> powerplants)
         {
             List<(string powerplantName, double costPerMWh)> meritOrder = this.GetMeritOrder(powerplants, fuels);
-            return this.GetProductionPlanResponse(load, meritOrder, powerplants);
-        }
-
-        private List<ProductionPlanResponse> GetProductionPlanResponse(uint load, List<(string powerplantName, double costPerMWh)> meritOrder, List<Domain.Models.Powerplant> powerplants)
-        {
-            List<ProductionPlanResponse> productionPlanResponse = new List<ProductionPlanResponse>();
-            foreach((string powerplantName, double costPerMWh) merit in meritOrder) 
-            {
-                Domain.Models.Powerplant powerplant = powerplants.Single(powerplant => powerplant.Name == merit.powerplantName);
-                if (load == 0)
-                {
-                    productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, 0));
-                }
-                else if (load < powerplant.Pmax && powerplant.Pmin <= load)
-                {
-                    //400 . 500 . 300
-                    //400 OK
-                    //300 . 500 . 400
-                    //300 PAS OK
-                    productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, load));
-                    load = 0;
-                }
-                else
-                {
-                    load -= powerplant.Pmax;
-                    productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, powerplant.Pmax));
-                }
-            }
-            return productionPlanResponse;
+            return this.GetProductionPlanResponse(load, meritOrder, powerplants, fuels.WindPercentage);
         }
 
         private List<(string powerplantName, double costPerMWh)> GetMeritOrder(List<Domain.Models.Powerplant> powerplants, Fuels fuels)
@@ -53,7 +25,7 @@ namespace Powerplant.Application.Services
                         meritOrder.Add((powerplant.Name, costPerMWh));
                         break;
                     case PowerType.Gasfired:
-                        costPerMWh = this.CalculatePowerplantCost(powerplant.Efficiency, fuels.GasEuroMwh);
+                        costPerMWh = this.CalculatePowerplantCost(powerplant.Efficiency, fuels.GasEuroMwh) + this.GetCo2CostPerMWh(fuels.Co2EuroTon);
                         meritOrder.Add((powerplant.Name, costPerMWh));
                         break;
                     case PowerType.Turbojet:
@@ -68,9 +40,48 @@ namespace Powerplant.Application.Services
             return meritOrder;
         }
 
-        private double CalculatePowerplantCost(double efficiency, double costFuelPerMWh)
+        private List<ProductionPlanResponse> GetProductionPlanResponse(uint load, 
+            List<(string powerplantName, double costPerMWh)> meritOrder, 
+            List<Domain.Models.Powerplant> powerplants, 
+            uint windPercentage)
         {
-            return costFuelPerMWh / efficiency;
+            List<ProductionPlanResponse> productionPlanResponse = new List<ProductionPlanResponse>();
+            foreach((string powerplantName, double costPerMWh) merit in meritOrder) 
+            {
+                Domain.Models.Powerplant powerplant = powerplants.Single(powerplant => powerplant.Name == merit.powerplantName);
+                if (powerplant.Type == PowerType.Windturbine) powerplant.Pmax = this.CalculateWindturbinePowerAmount(powerplant.Pmax, windPercentage);
+                if (load == 0)
+                {
+                    productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, 0));
+                }
+                else if (this.IsThePowerplantCanProduceTheLeftOverLoad(load, powerplant))
+                {
+                    productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, load));
+                    load = 0;
+                }
+                else
+                {
+                    load -= powerplant.Pmax;
+                    productionPlanResponse.Add(new ProductionPlanResponse(powerplant.Name, powerplant.Pmax));
+                }
+            }
+            return productionPlanResponse;
+        }
+
+        private bool IsThePowerplantCanProduceTheLeftOverLoad(uint load, Domain.Models.Powerplant powerplant)
+        {
+            return (load < powerplant.Pmax && powerplant.Pmin <= load);
+        }
+
+        private double CalculatePowerplantCost(double efficiency, double fuelCostPerMWh)
+        {
+            return fuelCostPerMWh / efficiency;
+        }
+
+        private double GetCo2CostPerMWh(uint co2EuroTon)
+        {
+            double co2TonProducedPerMWh = 0.3;
+            return co2EuroTon * co2TonProducedPerMWh;
         }
 
         /// <summary>
@@ -81,8 +92,7 @@ namespace Powerplant.Application.Services
         /// <returns></returns>
         private uint CalculateWindturbinePowerAmount(uint pMax, uint windPercentage)
         {
-            return pMax * (windPercentage / 100);
+            return (uint)(pMax * ((double)windPercentage / 100));
         }
     }
 }
-

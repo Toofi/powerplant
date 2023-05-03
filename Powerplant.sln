@@ -3,11 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Powerplant.API", "Powerplant\Powerplant.API.csproj", "{3E8AD416-DC34-4838-8D52-2CA9BF860E7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Powerplant.API", "Powerplant\Powerplant.API.csproj", "{3E8AD416-DC34-4838-8D52-2CA9BF860E7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Powerplant.Application", "Powerplant.Application\Powerplant.Application.csproj", "{251D31B4-9FB0-41B2-8FCC-98E031A21B03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Powerplant.Application", "Powerplant.Application\Powerplant.Application.csproj", "{251D31B4-9FB0-41B2-8FCC-98E031A21B03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Powerplant.Domain", "Powerplant.Domain\Powerplant.Domain.csproj", "{654411AB-ECD8-4558-9E47-6DC65F87F3C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Powerplant.Domain", "Powerplant.Domain\Powerplant.Domain.csproj", "{654411AB-ECD8-4558-9E47-6DC65F87F3C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4E5B92C7-6ADA-4C16-B977-8A1B634D0739}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
